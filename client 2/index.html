@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+    <script src="./wwwroot/lib/signalr/signalr.js"></script>
+
+    <title>SignalR</title>
+</head>
+<body>
+    <input type="text" id="userInput">
+    <input type="text" id="messageInput">
+
+    <button onclick="ValueInput()">Teste</button>
+<script>
+    const connection = new signalR.HubConnectionBuilder()
+    .withUrl("http://localhost:5000/chat")
+    .configureLogging(signalR.LogLevel.Information)
+    .build();
+
+    async function start() {
+    try {
+        await connection.start();
+        console.log("SignalR Connected.");
+    } catch (err) {
+        console.log(err);
+        setTimeout(start, 5000);
+    }
+};
+
+connection.onclose(async () => {
+    await start();
+});
+
+// Start the connection.
+start();
+
+// code 
+var inputUser = document.getElementById("userInput")
+var inputMessage = document.getElementById("messageInput")
+
+var user
+var message
+
+function ValueInput(){
+    user = inputUser.value
+    message = inputMessage.value
+
+    Invoke()
+}
+
+async function Invoke() {
+    try {
+        await connection.invoke("SendMessage", user, message);
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+connection.on("ReceiveMessage", (testeUser, testeMessage) => {
+    console.log("user", testeUser)
+    console.log("Mensagem", testeMessage)
+});
+</script>
+
+</body>
+</html>
